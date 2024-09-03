@@ -2,15 +2,15 @@
 
 [package]
 name = "countio"
-version = "0.2.18"
+version = "0.2.19"
 readme = "./README.md"
 
 edition = "2021"
 authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
 license = "MIT"
 
-repository = "https://github.com/spire-rs/kit"
-homepage = "https://github.com/spire-rs/kit"
+repository = "https://github.com/spire-rs/countio"
+homepage = "https://github.com/spire-rs/countio"
 documentation = "https://docs.rs/countio"
 categories = ["parsing", "asynchronous"]
 keywords = ["byte", "tokio", "futures", "parsing"]
