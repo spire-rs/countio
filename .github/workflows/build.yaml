@@ -18,7 +18,7 @@ jobs:
       - name: Set up Rust MSRV
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.60.0
+          toolchain: 1.85.0
 
       - name: Set up Cache
         uses: Swatinem/rust-cache@v2
