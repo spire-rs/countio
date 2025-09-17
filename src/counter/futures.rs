@@ -84,21 +84,21 @@ mod test {
     use super::*;
 
     #[futures_test::test]
-    async fn reader() -> Result<()> {
+    async fn test_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let mut reader = Counter::new(reader);
 
         let mut buf = Vec::new();
         let len = reader.read_to_end(&mut buf).await?;
 
-        assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len as u128, reader.total_bytes());
+        assert_eq!(len, reader.bytes_read());
+        assert_eq!(len as u128, reader.bytes_processed());
 
         Ok(())
     }
 
     #[futures_test::test]
-    async fn buf_reader() -> Result<()> {
+    async fn test_buf_reader() -> Result<()> {
         use futures_util::io::{AsyncBufReadExt, BufReader};
 
         let reader = "Hello World!".as_bytes();
@@ -108,14 +108,14 @@ mod test {
         let mut buf = String::new();
         let len = reader.read_line(&mut buf).await?;
 
-        assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len as u128, reader.total_bytes());
+        assert_eq!(len, reader.bytes_read());
+        assert_eq!(reader.bytes_processed(), 12);
 
         Ok(())
     }
 
     #[futures_test::test]
-    async fn writer() -> Result<()> {
+    async fn test_writer() -> Result<()> {
         use futures_util::io::BufWriter;
 
         let writer = Vec::new();
@@ -126,8 +126,31 @@ mod test {
         let len = writer.write(buf).await?;
         writer.flush().await?;
 
-        assert_eq!(len, writer.writer_bytes());
-        assert_eq!(len as u128, writer.total_bytes());
+        assert_eq!(len, writer.bytes_written());
+        assert_eq!(writer.bytes_processed(), 12);
+
+        Ok(())
+    }
+
+    #[futures_test::test]
+    async fn test_zero_byte_ops() -> Result<()> {
+        use futures_util::io::{AsyncReadExt, AsyncWriteExt};
+
+        let mut counter = Counter::new(Vec::new());
+        let len = counter.write(&[]).await?;
+
+        assert_eq!(len, 0);
+        assert_eq!(counter.bytes_written(), 0);
+        assert_eq!(counter.bytes_processed(), 0);
+
+        let reader = "".as_bytes();
+        let mut reader = Counter::new(reader);
+        let mut buf = [0u8; 10];
+        let len = reader.read(&mut buf).await?;
+
+        assert_eq!(len, 0);
+        assert_eq!(reader.bytes_read(), 0);
+        assert_eq!(reader.bytes_processed(), 0);
 
         Ok(())
     }

@@ -149,7 +149,7 @@ impl<D> Counter<D> {
     /// assert_eq!(reader.writer_bytes(), 0);
     /// ```
     #[inline]
-    pub const fn reader_bytes(&self) -> usize {
+    pub const fn bytes_read(&self) -> usize {
         self.reader_bytes
     }
 
@@ -172,7 +172,7 @@ impl<D> Counter<D> {
     /// assert_eq!(writer.reader_bytes(), 0);
     /// ```
     #[inline]
-    pub const fn writer_bytes(&self) -> usize {
+    pub const fn bytes_written(&self) -> usize {
         self.writer_bytes
     }
 
@@ -200,7 +200,7 @@ impl<D> Counter<D> {
     /// assert_eq!(reader.total_bytes(), 5);
     /// ```
     #[inline]
-    pub const fn total_bytes(&self) -> u128 {
+    pub const fn bytes_processed(&self) -> u128 {
         (self.reader_bytes as u128) + (self.writer_bytes as u128)
     }
 
@@ -286,7 +286,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn inner() {
+    fn test_inner() {
         let mut writer = Vec::<u8>::new();
         writer.push(8);
         assert_eq!(writer.len(), 1);
@@ -300,15 +300,15 @@ mod tests {
     }
 
     #[test]
-    fn from() {
+    fn test_from() {
         let _: Counter<_> = Vec::<u8>::new().into();
     }
 
     #[test]
-    fn with_bytes_creates_counter_with_initial_counts() {
+    fn test_with_bytes_creates_counter_with_initial_counts() {
         let counter = Counter::with_bytes(100, 200, Vec::<u8>::new());
-        assert_eq!(counter.reader_bytes(), 100);
-        assert_eq!(counter.writer_bytes(), 200);
-        assert_eq!(counter.total_bytes(), 300);
+        assert_eq!(counter.bytes_read(), 100);
+        assert_eq!(counter.bytes_written(), 200);
+        assert_eq!(counter.bytes_processed(), 300);
     }
 }

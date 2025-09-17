@@ -59,21 +59,21 @@ mod test {
     use super::*;
 
     #[test]
-    fn reader() -> Result<()> {
+    fn test_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let mut reader = Counter::new(reader);
 
         let mut buf = Vec::new();
         let len = reader.read_to_end(&mut buf)?;
 
-        assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len as u128, reader.total_bytes());
+        assert_eq!(len, reader.bytes_read());
+        assert_eq!(len as u128, reader.bytes_processed());
 
         Ok(())
     }
 
     #[test]
-    fn buf_reader() -> Result<()> {
+    fn test_buf_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let reader = BufReader::new(reader);
         let mut reader = Counter::new(reader);
@@ -81,14 +81,14 @@ mod test {
         let mut buf = String::new();
         let len = reader.read_line(&mut buf)?;
 
-        assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len as u128, reader.total_bytes());
+        assert_eq!(len, reader.bytes_read());
+        assert_eq!(len as u128, reader.bytes_processed());
 
         Ok(())
     }
 
     #[test]
-    fn writer() -> Result<()> {
+    fn test_writer() -> Result<()> {
         let writer = Vec::new();
         let writer = BufWriter::new(writer);
         let mut writer = Counter::new(writer);
@@ -97,18 +97,62 @@ mod test {
         let len = writer.write(buf)?;
         writer.flush()?;
 
-        assert_eq!(len, writer.writer_bytes());
-        assert_eq!(len as u128, writer.total_bytes());
+        assert_eq!(len, writer.bytes_written());
+        assert_eq!(len as u128, writer.bytes_processed());
 
         Ok(())
     }
 
     #[test]
-    fn debug() {
+    fn test_debug() {
         let writer = Vec::<u8>::new();
         let writer = Counter::new(writer);
 
         let fmt = "Counter { inner: [], read: 0, written: 0 }";
         assert_eq!(format!("{writer:?}"), fmt);
+    }
+
+    #[test]
+    fn test_seek() -> Result<()> {
+        use std::io::{Cursor, SeekFrom};
+
+        let data = b"Hello, World!".to_vec();
+        let cursor = Cursor::new(data);
+        let mut counter = Counter::new(cursor);
+
+        let pos = counter.seek(SeekFrom::Start(0))?;
+        assert_eq!(pos, 0);
+
+        let pos = counter.seek(SeekFrom::End(0))?;
+        assert_eq!(pos, 13);
+
+        let pos = counter.seek(SeekFrom::Current(-5))?;
+        assert_eq!(pos, 8);
+
+        assert_eq!(counter.bytes_read(), 0);
+        assert_eq!(counter.bytes_written(), 0);
+        assert_eq!(counter.bytes_processed(), 0);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_zero_byte_ops() -> Result<()> {
+        let mut counter = Counter::new(Vec::new());
+
+        let len = counter.write(&[])?;
+        assert_eq!(len, 0);
+        assert_eq!(counter.bytes_written(), 0);
+        assert_eq!(counter.bytes_processed(), 0);
+
+        let reader = "".as_bytes();
+        let mut reader = Counter::new(reader);
+        let mut buf = [0u8; 10];
+        let len = reader.read(&mut buf)?;
+        assert_eq!(len, 0);
+        assert_eq!(reader.bytes_read(), 0);
+        assert_eq!(reader.bytes_processed(), 0);
+
+        Ok(())
     }
 }

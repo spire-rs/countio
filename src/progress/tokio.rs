@@ -73,7 +73,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn reader() -> Result<()> {
+    async fn test_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let mut reader = Progress::new(reader);
 
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn buf_reader() -> Result<()> {
+    async fn test_buf_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let reader = BufReader::new(reader);
         let mut reader = Progress::new(reader);
@@ -102,7 +102,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn writer() -> Result<()> {
+    async fn test_writer() -> Result<()> {
         let writer = Vec::new();
         let writer = BufWriter::new(writer);
         let mut writer = Progress::new(writer);
@@ -118,13 +118,34 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn progress_with_known_total() -> Result<()> {
+    async fn test_progress_with_known_total() -> Result<()> {
         let mut progress = Progress::with_total(Vec::new(), 100);
-        progress.write_all(b"Hello").await?; // 5 bytes
+        progress.write_all(b"Hello").await?;
 
-        assert_eq!(progress.percentage().unwrap(), 0.05); // 5%
+        assert_eq!(progress.percentage().unwrap(), 0.05);
         assert_eq!(progress.bytes_written(), 5);
         assert_eq!(progress.bytes_processed(), 5);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_zero_byte_ops() -> Result<()> {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let mut progress = Progress::with_total(Vec::new(), 100);
+
+        let len = progress.write(&[]).await?;
+        assert_eq!(len, 0);
+        assert_eq!(progress.bytes_written(), 0);
+        assert_eq!(progress.percentage(), Some(0.0));
+
+        let reader = "".as_bytes();
+        let mut reader = Progress::new(reader);
+        let mut buf = [0u8; 10];
+        let len = reader.read(&mut buf).await?;
+        assert_eq!(len, 0);
+        assert_eq!(reader.bytes_read(), 0);
 
         Ok(())
     }

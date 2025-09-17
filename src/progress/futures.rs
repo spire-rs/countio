@@ -69,7 +69,7 @@ mod test {
     use super::*;
 
     #[futures_test::test]
-    async fn reader() -> Result<()> {
+    async fn test_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let mut reader = Progress::new(reader);
 
@@ -83,7 +83,7 @@ mod test {
     }
 
     #[futures_test::test]
-    async fn buf_reader() -> Result<()> {
+    async fn test_buf_reader() -> Result<()> {
         use futures_util::io::{AsyncBufReadExt, BufReader};
 
         let reader = "Hello World!".as_bytes();
@@ -100,7 +100,7 @@ mod test {
     }
 
     #[futures_test::test]
-    async fn writer() -> Result<()> {
+    async fn test_writer() -> Result<()> {
         use futures_util::io::BufWriter;
 
         let writer = Vec::new();
@@ -118,13 +118,36 @@ mod test {
     }
 
     #[futures_test::test]
-    async fn progress_with_known_total() -> Result<()> {
+    async fn test_progress_with_known_total() -> Result<()> {
         let mut progress = Progress::with_total(Vec::new(), 100);
         progress.write_all(b"Hello").await?;
 
         assert_eq!(progress.percentage(), Some(0.05));
         assert_eq!(progress.bytes_written(), 5);
         assert_eq!(progress.bytes_processed(), 5);
+
+        Ok(())
+    }
+
+    #[futures_test::test]
+    async fn test_zero_byte_ops() -> Result<()> {
+        use futures_util::io::{AsyncReadExt, AsyncWriteExt};
+
+        let mut progress = Progress::with_total(Vec::new(), 100);
+
+        // Zero byte write
+        let len = progress.write(&[]).await?;
+        assert_eq!(len, 0);
+        assert_eq!(progress.bytes_written(), 0);
+        assert_eq!(progress.percentage(), Some(0.0));
+
+        // Zero byte read
+        let reader = "".as_bytes();
+        let mut reader = Progress::new(reader);
+        let mut buf = [0u8; 10];
+        let len = reader.read(&mut buf).await?;
+        assert_eq!(len, 0);
+        assert_eq!(reader.bytes_read(), 0);
 
         Ok(())
     }
