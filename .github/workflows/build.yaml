@@ -62,7 +62,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        toolchain: [stable, beta]
+        toolchain: [stable]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out
@@ -72,6 +72,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
+          components: clippy, rustfmt
 
       - name: Set up Cache
         uses: Swatinem/rust-cache@v2
