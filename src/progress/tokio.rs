@@ -2,8 +2,7 @@ use std::io::{Result, SeekFrom};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use tokio::io::{AsyncBufRead, AsyncSeek, AsyncWrite};
-use tokio::io::{AsyncRead, ReadBuf};
+use tokio::io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite, ReadBuf};
 
 use crate::Progress;
 
@@ -69,8 +68,7 @@ impl<D: AsyncSeek + Unpin> AsyncSeek for Progress<D> {
 
 #[cfg(test)]
 mod tests {
-    use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
-    use tokio::io::{AsyncReadExt, BufReader, BufWriter};
+    use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
 
     use super::*;
 

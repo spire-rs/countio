@@ -1,8 +1,10 @@
-use crate::Counter;
-use futures_io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite};
 use std::io::Result;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+
+use futures_io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite};
+
+use crate::Counter;
 
 impl<R: AsyncRead + Unpin> AsyncRead for Counter<R> {
     fn poll_read(

@@ -1,5 +1,3 @@
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod stdlib;
 
 #[cfg(feature = "futures")]
@@ -155,9 +153,9 @@ impl<D> From<Counter<D>> for Progress<D> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[cfg(feature = "std")]
     use std::io::{Result, Write};
+
+    use super::*;
 
     #[test]
     fn progress_basic_functionality() {
@@ -169,7 +167,6 @@ mod tests {
         assert_eq!(progress_with_total.total_expected(), Some(1000));
     }
 
-    #[cfg(feature = "std")]
     #[test]
     fn progress_percentage_calculation() -> Result<()> {
         let mut progress = Progress::with_total(Vec::new(), 100);

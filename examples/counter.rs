@@ -3,8 +3,9 @@
 //! This example demonstrates the basic functionality of the `Counter` wrapper
 //! for tracking bytes read and written through I/O operations.
 
-use countio::Counter;
 use std::io::{Read, Write};
+
+use countio::Counter;
 
 fn main() -> std::io::Result<()> {
     println!("=== Counter Examples ===\n");

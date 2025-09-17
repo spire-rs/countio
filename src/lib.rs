@@ -19,6 +19,5 @@ mod progress;
 /// ```
 #[doc(hidden)]
 pub mod prelude {
-    pub use super::Counter;
-    pub use super::Progress;
+    pub use super::{Counter, Progress};
 }

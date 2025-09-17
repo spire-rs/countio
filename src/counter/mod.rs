@@ -1,5 +1,3 @@
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod stdlib;
 
 #[cfg(feature = "futures")]

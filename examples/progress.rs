@@ -3,8 +3,9 @@
 //! This example demonstrates the `Progress` wrapper for tracking
 //! percentage completion and processing statistics.
 
-use countio::Progress;
 use std::io::{Read, Write};
+
+use countio::Progress;
 
 fn main() -> std::io::Result<()> {
     println!("=== Progress Examples ===\n");

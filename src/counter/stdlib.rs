@@ -1,6 +1,5 @@
 use std::fmt;
-use std::io::{BufRead, Read, Seek, Write};
-use std::io::{Result, SeekFrom};
+use std::io::{BufRead, Read, Result, Seek, SeekFrom, Write};
 
 use crate::Counter;
 

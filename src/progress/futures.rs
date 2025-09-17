@@ -1,8 +1,10 @@
-use crate::Progress;
-use futures_io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite};
 use std::io::{Result, SeekFrom};
 use std::pin::Pin;
 use std::task::{Context, Poll};
+
+use futures_io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite};
+
+use crate::Progress;
 
 impl<R: AsyncRead + Unpin> AsyncRead for Progress<R> {
     fn poll_read(
@@ -60,8 +62,9 @@ impl<D: AsyncSeek + Unpin> AsyncSeek for Progress<D> {
 
 #[cfg(test)]
 mod test {
-    use futures_util::io::{AsyncReadExt, AsyncWriteExt};
     use std::io::Result;
+
+    use futures_util::io::{AsyncReadExt, AsyncWriteExt};
 
     use super::*;
 
