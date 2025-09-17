@@ -6,7 +6,7 @@ version = "0.3.0"
 readme = "./README.md"
 
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.85.1"
 authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
 license = "MIT"
 
