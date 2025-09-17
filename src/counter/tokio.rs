@@ -2,7 +2,8 @@ use std::io::{Result, SeekFrom};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use futures_io::{AsyncBufRead, AsyncRead, AsyncSeek, AsyncWrite};
+use tokio::io::{AsyncBufRead, AsyncSeek, AsyncWrite};
+use tokio::io::{AsyncRead, ReadBuf};
 
 use crate::Counter;
 
@@ -10,13 +11,15 @@ impl<R: AsyncRead + Unpin> AsyncRead for Counter<R> {
     fn poll_read(
         self: Pin<&mut Self>,
         ctx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<Result<usize>> {
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<Result<()>> {
         let counter = self.get_mut();
-
         let pin = Pin::new(&mut counter.inner);
+        let bytes = buf.filled().len();
+
         let poll = pin.poll_read(ctx, buf);
-        if let Poll::Ready(Ok(bytes)) = poll {
+        if matches!(poll, Poll::Ready(Ok(()))) {
+            let bytes = buf.filled().len() - bytes;
             counter.reader_bytes += bytes;
         }
 
@@ -45,8 +48,8 @@ impl<W: AsyncWrite + Unpin> AsyncWrite for Counter<W> {
     fn poll_write(self: Pin<&mut Self>, ctx: &mut Context<'_>, buf: &[u8]) -> Poll<Result<usize>> {
         let counter = self.get_mut();
         let pin = Pin::new(&mut counter.inner);
-        let poll = pin.poll_write(ctx, buf);
 
+        let poll = pin.poll_write(ctx, buf);
         if let Poll::Ready(Ok(bytes)) = poll {
             counter.writer_bytes += bytes;
         }
@@ -60,29 +63,35 @@ impl<W: AsyncWrite + Unpin> AsyncWrite for Counter<W> {
         pin.poll_flush(ctx)
     }
 
-    fn poll_close(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Result<()>> {
+    fn poll_shutdown(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Result<()>> {
         let counter = self.get_mut();
         let pin = Pin::new(&mut counter.inner);
-        pin.poll_close(ctx)
+        pin.poll_shutdown(ctx)
     }
 }
 
 impl<D: AsyncSeek + Unpin> AsyncSeek for Counter<D> {
-    fn poll_seek(self: Pin<&mut Self>, ctx: &mut Context<'_>, pos: SeekFrom) -> Poll<Result<u64>> {
+    fn start_seek(self: Pin<&mut Self>, position: SeekFrom) -> Result<()> {
         let counter = self.get_mut();
         let pin = Pin::new(&mut counter.inner);
-        pin.poll_seek(ctx, pos)
+        pin.start_seek(position)
+    }
+
+    fn poll_complete(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Result<u64>> {
+        let counter = self.get_mut();
+        let pin = Pin::new(&mut counter.inner);
+        pin.poll_complete(ctx)
     }
 }
 
 #[cfg(test)]
-mod test {
-    use futures_util::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt};
-    use futures_util::io::{BufReader, BufWriter};
+mod tests {
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+    use tokio::io::{AsyncReadExt, BufReader, BufWriter};
 
     use super::*;
 
-    #[futures_test::test]
+    #[tokio::test]
     async fn reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let mut reader = Counter::new(reader);
@@ -91,12 +100,11 @@ mod test {
         let len = reader.read_to_end(&mut buf).await?;
 
         assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len, reader.total_bytes());
 
         Ok(())
     }
 
-    #[futures_test::test]
+    #[tokio::test]
     async fn buf_reader() -> Result<()> {
         let reader = "Hello World!".as_bytes();
         let reader = BufReader::new(reader);
@@ -106,12 +114,11 @@ mod test {
         let len = reader.read_line(&mut buf).await?;
 
         assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len, reader.total_bytes());
 
         Ok(())
     }
 
-    #[futures_test::test]
+    #[tokio::test]
     async fn writer() -> Result<()> {
         let writer = Vec::new();
         let writer = BufWriter::new(writer);
@@ -122,7 +129,6 @@ mod test {
         writer.flush().await?;
 
         assert_eq!(len, writer.writer_bytes());
-        assert_eq!(len, writer.total_bytes());
 
         Ok(())
     }

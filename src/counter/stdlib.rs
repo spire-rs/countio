@@ -68,7 +68,7 @@ mod test {
         let len = reader.read_to_end(&mut buf)?;
 
         assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len, reader.total_bytes());
+        assert_eq!(len as u128, reader.total_bytes());
 
         Ok(())
     }
@@ -83,7 +83,7 @@ mod test {
         let len = reader.read_line(&mut buf)?;
 
         assert_eq!(len, reader.reader_bytes());
-        assert_eq!(len, reader.total_bytes());
+        assert_eq!(len as u128, reader.total_bytes());
 
         Ok(())
     }
@@ -99,7 +99,7 @@ mod test {
         writer.flush()?;
 
         assert_eq!(len, writer.writer_bytes());
-        assert_eq!(len, writer.total_bytes());
+        assert_eq!(len as u128, writer.total_bytes());
 
         Ok(())
     }

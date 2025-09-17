@@ -6,6 +6,7 @@ version = "0.2.19"
 readme = "./README.md"
 
 edition = "2021"
+rust-version = "1.60.0"
 authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
 license = "MIT"
 
@@ -23,9 +24,6 @@ its async variants from futures and tokio.
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
-[lib]
-path = "./lib.rs"
-
 [features]
 default = ["std"]
 full = ["std", "tokio", "futures"]
@@ -34,9 +32,12 @@ std = []
 tokio = ["dep:tokio"]
 futures = ["dep:futures-io"]
 
+
 [dependencies]
 tokio = { version = "1", default-features = false, optional = true }
-futures-io = { version = "0.3", default-features = false, optional = true, features = ["std"] }
+futures-io = { version = "0.3", default-features = false, optional = true }
+futures-util = { version = "0.3", default-features = false, optional = true, features = ["io"] }
+
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "macros", "io-util"] }

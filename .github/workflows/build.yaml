@@ -7,15 +7,95 @@ on:
   pull_request:
 
 jobs:
+  # Test MSRV
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Rust MSRV
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.60.0
+
+      - name: Set up Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test MSRV
+        run: cargo check --all-features
+
+  # Test no_std compatibility
+  no-std:
+    name: No-std
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Set up Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test no-std build (no features)
+        run: cargo check --no-default-features
+
+      - name: Test no-std build (futures only)
+        run: cargo check --no-default-features --features futures
+
+      - name: Test no-std build (tokio only)
+        run: cargo check --no-default-features --features tokio
+
+  # Test feature combinations
+  features:
+    name: Feature Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Set up Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test no features
+        run: cargo test --no-default-features
+
+      - name: Test std only
+        run: cargo test --no-default-features --features std
+
+      - name: Test futures only
+        run: cargo test --no-default-features --features futures
+
+      - name: Test tokio only
+        run: cargo test --no-default-features --features tokio
+
+      - name: Test std + futures
+        run: cargo test --no-default-features --features "std,futures"
+
+      - name: Test std + tokio
+        run: cargo test --no-default-features --features "std,tokio"
+
+      - name: Test all features
+        run: cargo test --all-features
+
   ci:
     name: CI
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        toolchain: [ stable ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        toolchain: [stable, beta]
     runs-on: ${{ matrix.os }}
     steps:
-
       - name: Check out
         uses: actions/checkout@v4
 
@@ -46,15 +126,24 @@ jobs:
       - name: Run Cargo:clippy
         run: cargo clippy --all-features -- -D warnings
 
-      - name: Run Cargo:test
+      - name: Run Cargo:test (default features)
+        run: cargo test --verbose
+
+      - name: Run Cargo:test (all features)
         run: cargo test --verbose --all-features
 
-      - name: Run Cargo:tarpaulin
+      - name: Run examples (std features only)
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo run --example counter
+          cargo run --example progress
+
+      - name: Run Cargo:tarpaulin
+        if: matrix.os == 'ubuntu-latest' && matrix.toolchain == 'stable'
         run: cargo tarpaulin --verbose --all-features --out Xml --output-dir ./coverage
 
       - name: Upload Codecov
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.toolchain == 'stable'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
