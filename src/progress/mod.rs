@@ -44,7 +44,7 @@ impl<D> Progress<D> {
     /// let progress = Progress::new(Vec::<u8>::new());
     /// assert_eq!(progress.total_expected(), None);
     /// ```
-    pub fn new(inner: D) -> Self {
+    pub const fn new(inner: D) -> Self {
         Self {
             counter: Counter::new(inner),
             total_expected: None,
@@ -61,7 +61,7 @@ impl<D> Progress<D> {
     /// let progress = Progress::with_total(Vec::<u8>::new(), 2048);
     /// assert_eq!(progress.total_expected(), Some(2048));
     /// ```
-    pub fn with_total(inner: D, total_expected: u64) -> Self {
+    pub const fn with_total(inner: D, total_expected: u64) -> Self {
         Self {
             counter: Counter::new(inner),
             total_expected: Some(total_expected),
@@ -69,37 +69,37 @@ impl<D> Progress<D> {
     }
 
     /// Returns the underlying `Counter`.
-    pub fn counter(&self) -> &Counter<D> {
+    pub const fn counter(&self) -> &Counter<D> {
         &self.counter
     }
 
     /// Returns a mutable reference to the underlying `Counter`.
-    pub fn counter_mut(&mut self) -> &mut Counter<D> {
+    pub const fn counter_mut(&mut self) -> &mut Counter<D> {
         &mut self.counter
     }
 
     /// Returns the total number of bytes processed (read + written).
-    pub fn bytes_processed(&self) -> u128 {
+    pub const fn bytes_processed(&self) -> u128 {
         self.counter.total_bytes()
     }
 
     /// Returns the number of bytes read.
-    pub fn bytes_read(&self) -> usize {
+    pub const fn bytes_read(&self) -> usize {
         self.counter.reader_bytes()
     }
 
     /// Returns the number of bytes written.
-    pub fn bytes_written(&self) -> usize {
+    pub const fn bytes_written(&self) -> usize {
         self.counter.writer_bytes()
     }
 
     /// Returns the expected total size, if known.
-    pub fn total_expected(&self) -> Option<u64> {
+    pub const fn total_expected(&self) -> Option<u64> {
         self.total_expected
     }
 
     /// Sets the expected total size.
-    pub fn set_total_expected(&mut self, total: Option<u64>) {
+    pub const fn set_total_expected(&mut self, total: Option<u64>) {
         self.total_expected = total;
     }
 
@@ -114,8 +114,9 @@ impl<D> Progress<D> {
     /// let mut progress = Progress::with_total(Vec::new(), 100);
     /// progress.write_all(b"Hello").unwrap();
     ///
-    /// assert_eq!(progress.percentage().unwrap(), 0.05);
+    /// assert_eq!(progress.percentage(), Some(0.05));
     /// ```
+    #[allow(clippy::cast_precision_loss)]
     pub fn percentage(&self) -> Option<f64> {
         self.total_expected.map(|total| {
             if total == 0 {
@@ -132,12 +133,12 @@ impl<D> Progress<D> {
     }
 
     /// Gets a reference to the underlying I/O object.
-    pub fn get_ref(&self) -> &D {
+    pub const fn get_ref(&self) -> &D {
         self.counter.get_ref()
     }
 
     /// Gets a mutable reference to the underlying I/O object.
-    pub fn get_mut(&mut self) -> &mut D {
+    pub const fn get_mut(&mut self) -> &mut D {
         self.counter.get_mut()
     }
 }

@@ -19,7 +19,7 @@ mod tokio;
 ///
 /// # Examples
 ///
-/// ## Basic Usage with std::io
+/// ## Basic Usage with `std::io`
 ///
 /// ```rust
 /// use std::io::{Read, Write};
@@ -245,7 +245,7 @@ impl<D> Counter<D> {
     /// assert_eq!(counter.get_ref().position(), 0);
     /// ```
     #[inline]
-    pub fn get_ref(&self) -> &D {
+    pub const fn get_ref(&self) -> &D {
         &self.inner
     }
 
@@ -269,7 +269,7 @@ impl<D> Counter<D> {
     /// assert_eq!(counter.get_ref().position(), 2);
     /// ```
     #[inline]
-    pub fn get_mut(&mut self) -> &mut D {
+    pub const fn get_mut(&mut self) -> &mut D {
         &mut self.inner
     }
 }

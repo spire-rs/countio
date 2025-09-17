@@ -1,4 +1,6 @@
 #![forbid(unsafe_code)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("../README.md")]
 
@@ -11,12 +13,6 @@ mod progress;
 /// A convenience module that re-exports commonly used items.
 ///
 /// This module is intended to be glob-imported for convenience:
-///
-/// ```rust
-/// use countio::prelude::*;
-///
-/// let counter = Counter::new(Vec::<u8>::new());
-/// ```
 #[doc(hidden)]
 pub mod prelude {
     pub use super::{Counter, Progress};

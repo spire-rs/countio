@@ -2,11 +2,11 @@
 
 [package]
 name = "countio"
-version = "0.2.19"
+version = "0.3.0"
 readme = "./README.md"
 
-edition = "2021"
-rust-version = "1.60.0"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
 license = "MIT"
 
