@@ -33,7 +33,7 @@ futures = ["dep:futures-io"]
 
 [dependencies]
 tokio = { version = "1", default-features = false, optional = true }
-futures-io = { version = "0.3", default-features = false, optional = true }
+futures-io = { version = "0.3", default-features = false, optional = true, features = ["std"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "macros", "io-util"] }
