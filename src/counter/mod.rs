@@ -30,12 +30,12 @@ mod tokio;
 /// let mut reader = Counter::new(&data[..]);
 /// let mut buffer = [0u8; 5];
 /// reader.read(&mut buffer).unwrap();
-/// assert_eq!(reader.reader_bytes(), 5);
+/// assert_eq!(reader.bytes_read(), 5);
 ///
 /// // Counting bytes written
 /// let mut writer = Counter::new(Vec::new());
 /// writer.write_all(b"Hello").unwrap();
-/// assert_eq!(writer.writer_bytes(), 5);
+/// assert_eq!(writer.bytes_written(), 5);
 /// ```
 ///
 /// ## With Buffered I/O
@@ -50,14 +50,14 @@ mod tokio;
 /// let mut counter = Counter::new(reader);
 /// let mut line = String::new();
 /// counter.read_line(&mut line).unwrap();
-/// assert_eq!(counter.reader_bytes(), 7);
+/// assert_eq!(counter.bytes_read(), 7);
 ///
 /// // Buffered writing
 /// let writer = BufWriter::new(Vec::new());
 /// let mut counter = Counter::new(writer);
 /// counter.write_all(b"Hello, World!").unwrap();
 /// counter.flush().unwrap();
-/// assert_eq!(counter.writer_bytes(), 13);
+/// assert_eq!(counter.bytes_written(), 13);
 /// ```
 ///
 /// # Performance
@@ -88,8 +88,8 @@ impl<D> Counter<D> {
     /// let cursor = Cursor::new(data);
     /// let counter = Counter::new(cursor);
     ///
-    /// assert_eq!(counter.reader_bytes(), 0);
-    /// assert_eq!(counter.writer_bytes(), 0);
+    /// assert_eq!(counter.bytes_read(), 0);
+    /// assert_eq!(counter.bytes_written(), 0);
     /// ```
     #[inline]
     pub const fn new(inner: D) -> Self {
@@ -117,8 +117,8 @@ impl<D> Counter<D> {
     /// let cursor = Cursor::new(data);
     /// let counter = Counter::with_bytes(100, 50, cursor);
     ///
-    /// assert_eq!(counter.reader_bytes(), 100);
-    /// assert_eq!(counter.writer_bytes(), 50);
+    /// assert_eq!(counter.bytes_read(), 100);
+    /// assert_eq!(counter.bytes_written(), 50);
     /// ```
     #[inline]
     pub const fn with_bytes(reader_bytes: usize, writer_bytes: usize, inner: D) -> Self {
@@ -145,8 +145,8 @@ impl<D> Counter<D> {
     /// let mut buffer = [0u8; 5];
     ///
     /// reader.read_exact(&mut buffer).unwrap();
-    /// assert_eq!(reader.reader_bytes(), 5);
-    /// assert_eq!(reader.writer_bytes(), 0);
+    /// assert_eq!(reader.bytes_read(), 5);
+    /// assert_eq!(reader.bytes_written(), 0);
     /// ```
     #[inline]
     pub const fn bytes_read(&self) -> usize {
@@ -168,8 +168,8 @@ impl<D> Counter<D> {
     /// writer.write_all(b"Hello").unwrap();
     /// writer.write_all(b", World!").unwrap();
     ///
-    /// assert_eq!(writer.writer_bytes(), 13);
-    /// assert_eq!(writer.reader_bytes(), 0);
+    /// assert_eq!(writer.bytes_written(), 13);
+    /// assert_eq!(writer.bytes_read(), 0);
     /// ```
     #[inline]
     pub const fn bytes_written(&self) -> usize {
@@ -196,8 +196,8 @@ impl<D> Counter<D> {
     /// let mut buf = [0u8; 5];
     /// reader.read(&mut buf).unwrap();
     ///
-    /// assert_eq!(counter.total_bytes(), 5);
-    /// assert_eq!(reader.total_bytes(), 5);
+    /// assert_eq!(counter.bytes_processed(), 5);
+    /// assert_eq!(reader.bytes_processed(), 5);
     /// ```
     #[inline]
     pub const fn bytes_processed(&self) -> u128 {

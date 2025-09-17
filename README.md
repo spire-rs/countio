@@ -41,7 +41,7 @@ fn main() -> Result<()> {
     let mut buf = String::new();
     let len = reader.read_line(&mut buf)?;
 
-    assert_eq!(len, reader.reader_bytes());
+    assert_eq!(len, reader.bytes_read());
     Ok(())
 }
 ```
@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     let len = writer.write(buf)?;
     writer.flush()?;
 
-    assert_eq!(len, writer.writer_bytes());
+    assert_eq!(len, writer.bytes_written());
     Ok(())
 }
 ```
