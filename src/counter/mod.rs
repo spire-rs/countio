@@ -32,12 +32,12 @@ mod tokio;
 /// let mut reader = Counter::new(&data[..]);
 /// let mut buffer = [0u8; 5];
 /// reader.read(&mut buffer).unwrap();
-/// assert_eq!(reader.bytes_read(), 5);
+/// assert_eq!(reader.reader_bytes(), 5);
 ///
 /// // Counting bytes written
 /// let mut writer = Counter::new(Vec::new());
 /// writer.write_all(b"Hello").unwrap();
-/// assert_eq!(writer.bytes_written(), 5);
+/// assert_eq!(writer.writer_bytes(), 5);
 /// ```
 ///
 /// ## With Buffered I/O
@@ -52,14 +52,14 @@ mod tokio;
 /// let mut counter = Counter::new(reader);
 /// let mut line = String::new();
 /// counter.read_line(&mut line).unwrap();
-/// assert_eq!(counter.bytes_read(), 7);
+/// assert_eq!(counter.reader_bytes(), 7);
 ///
 /// // Buffered writing
 /// let writer = BufWriter::new(Vec::new());
 /// let mut counter = Counter::new(writer);
 /// counter.write_all(b"Hello, World!").unwrap();
 /// counter.flush().unwrap();
-/// assert_eq!(counter.bytes_written(), 13);
+/// assert_eq!(counter.writer_bytes(), 13);
 /// ```
 ///
 /// # Performance
@@ -90,12 +90,12 @@ impl<D> Counter<D> {
     /// let cursor = Cursor::new(data);
     /// let counter = Counter::new(cursor);
     ///
-    /// assert_eq!(counter.bytes_read(), 0);
-    /// assert_eq!(counter.bytes_written(), 0);
+    /// assert_eq!(counter.reader_bytes(), 0);
+    /// assert_eq!(counter.writer_bytes(), 0);
     /// ```
     #[inline]
     pub const fn new(inner: D) -> Self {
-        Self::with_bytes(0, 0, inner)
+        Self::with_bytes(inner, 0, 0)
     }
 
     /// Creates a new `Counter<D>` with pre-existing read/written byte counts.
@@ -105,9 +105,9 @@ impl<D> Counter<D> {
     ///
     /// # Arguments
     ///
+    /// * `inner` - The I/O object to wrap
     /// * `reader_bytes` - Initial count of bytes read
     /// * `writer_bytes` - Initial count of bytes written
-    /// * `inner` - The I/O object to wrap
     ///
     /// # Examples
     ///
@@ -117,13 +117,13 @@ impl<D> Counter<D> {
     ///
     /// let data = vec![1, 2, 3, 4, 5];
     /// let cursor = Cursor::new(data);
-    /// let counter = Counter::with_bytes(100, 50, cursor);
+    /// let counter = Counter::with_bytes(cursor, 100, 50);
     ///
-    /// assert_eq!(counter.bytes_read(), 100);
-    /// assert_eq!(counter.bytes_written(), 50);
+    /// assert_eq!(counter.reader_bytes(), 100);
+    /// assert_eq!(counter.writer_bytes(), 50);
     /// ```
     #[inline]
-    pub const fn with_bytes(reader_bytes: usize, writer_bytes: usize, inner: D) -> Self {
+    pub const fn with_bytes(inner: D, reader_bytes: usize, writer_bytes: usize) -> Self {
         Self {
             inner,
             reader_bytes,
@@ -147,11 +147,11 @@ impl<D> Counter<D> {
     /// let mut buffer = [0u8; 5];
     ///
     /// reader.read_exact(&mut buffer).unwrap();
-    /// assert_eq!(reader.bytes_read(), 5);
-    /// assert_eq!(reader.bytes_written(), 0);
+    /// assert_eq!(reader.reader_bytes(), 5);
+    /// assert_eq!(reader.writer_bytes(), 0);
     /// ```
     #[inline]
-    pub const fn bytes_read(&self) -> usize {
+    pub const fn reader_bytes(&self) -> usize {
         self.reader_bytes
     }
 
@@ -170,11 +170,11 @@ impl<D> Counter<D> {
     /// writer.write_all(b"Hello").unwrap();
     /// writer.write_all(b", World!").unwrap();
     ///
-    /// assert_eq!(writer.bytes_written(), 13);
-    /// assert_eq!(writer.bytes_read(), 0);
+    /// assert_eq!(writer.writer_bytes(), 13);
+    /// assert_eq!(writer.reader_bytes(), 0);
     /// ```
     #[inline]
-    pub const fn bytes_written(&self) -> usize {
+    pub const fn writer_bytes(&self) -> usize {
         self.writer_bytes
     }
 
@@ -198,11 +198,11 @@ impl<D> Counter<D> {
     /// let mut buf = [0u8; 5];
     /// reader.read(&mut buf).unwrap();
     ///
-    /// assert_eq!(counter.bytes_processed(), 5);
-    /// assert_eq!(reader.bytes_processed(), 5);
+    /// assert_eq!(counter.total_bytes(), 5);
+    /// assert_eq!(reader.total_bytes(), 5);
     /// ```
     #[inline]
-    pub const fn bytes_processed(&self) -> u128 {
+    pub const fn total_bytes(&self) -> u128 {
         (self.reader_bytes as u128) + (self.writer_bytes as u128)
     }
 
@@ -288,11 +288,11 @@ impl<D> Counter<D> {
     ///
     /// let mut counter = Counter::new(Vec::new());
     /// counter.write_all(b"Hello").unwrap();
-    /// assert_eq!(counter.bytes_written(), 5);
+    /// assert_eq!(counter.writer_bytes(), 5);
     ///
     /// counter.reset();
-    /// assert_eq!(counter.bytes_written(), 0);
-    /// assert_eq!(counter.bytes_read(), 0);
+    /// assert_eq!(counter.writer_bytes(), 0);
+    /// assert_eq!(counter.reader_bytes(), 0);
     ///
     /// // The underlying data is preserved
     /// assert_eq!(counter.get_ref(), b"Hello");
@@ -362,10 +362,10 @@ mod tests {
 
     #[test]
     fn test_with_bytes_creates_counter_with_initial_counts() {
-        let counter = Counter::with_bytes(100, 200, Vec::<u8>::new());
-        assert_eq!(counter.bytes_read(), 100);
-        assert_eq!(counter.bytes_written(), 200);
-        assert_eq!(counter.bytes_processed(), 300);
+        let counter = Counter::with_bytes(Vec::<u8>::new(), 100, 200);
+        assert_eq!(counter.reader_bytes(), 100);
+        assert_eq!(counter.writer_bytes(), 200);
+        assert_eq!(counter.total_bytes(), 300);
     }
 
     #[test]
@@ -374,12 +374,12 @@ mod tests {
 
         let mut counter = Counter::new(Vec::new());
         counter.write_all(b"Hello").unwrap();
-        assert_eq!(counter.bytes_written(), 5);
+        assert_eq!(counter.writer_bytes(), 5);
 
         counter.reset();
-        assert_eq!(counter.bytes_written(), 0);
-        assert_eq!(counter.bytes_read(), 0);
-        assert_eq!(counter.bytes_processed(), 0);
+        assert_eq!(counter.writer_bytes(), 0);
+        assert_eq!(counter.reader_bytes(), 0);
+        assert_eq!(counter.total_bytes(), 0);
 
         // Data is preserved
         assert_eq!(counter.get_ref(), b"Hello");
@@ -393,15 +393,15 @@ mod tests {
         counter.write_all(b"Hello").unwrap();
 
         let cloned = counter.clone();
-        assert_eq!(cloned.bytes_written(), 5);
+        assert_eq!(cloned.writer_bytes(), 5);
         assert_eq!(cloned.get_ref(), b"Hello");
     }
 
     #[test]
     fn test_default() {
         let counter: Counter<Vec<u8>> = Counter::default();
-        assert_eq!(counter.bytes_read(), 0);
-        assert_eq!(counter.bytes_written(), 0);
+        assert_eq!(counter.reader_bytes(), 0);
+        assert_eq!(counter.writer_bytes(), 0);
         assert!(counter.get_ref().is_empty());
     }
 }

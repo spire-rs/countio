@@ -13,19 +13,28 @@ and this project adheres to
 ### Added
 
 - `Progress<D>` wrapper for tracking progress with percentage calculations
+- Separate `expected_reader_bytes` and `expected_writer_bytes` tracking in `Progress`
+- `reader_percentage()` and `writer_percentage()` methods for `Progress`
+- `with_expected_reader_bytes()`, `with_expected_writer_bytes()`, and `with_expected_bytes()` constructors
 - `Clone` implementation for `Counter<D>` and `Progress<D>` when `D: Clone`
 - `Default` implementation for `Counter<D>` and `Progress<D>` when `D: Default`
 - `Debug` implementation for `Progress<D>` when `D: Debug`
 - `reset()` method for both `Counter` and `Progress` to reset byte counters
 - `std` feature flag (enabled by default) for `std::io` trait implementations
-- CONTRIBUTING.md and CHANGELOG.md
-- rustfmt.toml configuration
 
 ### Changed
 
+- **Breaking:** Renamed `bytes_read()` to `reader_bytes()` for consistency
+- **Breaking:** Renamed `bytes_written()` to `writer_bytes()` for consistency
+- **Breaking:** Renamed `bytes_processed()` to `total_bytes()`
+- **Breaking:** Changed `with_bytes()` parameter order to `(inner, reader_bytes, writer_bytes)`
 - Reworked CI pipeline
 - Bumped MSRV to 1.85 and updated to Rust 2024 edition
 - Updated README to accurately document available features
+
+### Removed
+
+- **Breaking:** Removed `counter()` and `counter_mut()` from `Progress` (use delegated methods instead)
 
 ## [0.3.0] - 2025-01-01
 

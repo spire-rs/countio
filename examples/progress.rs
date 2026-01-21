@@ -10,8 +10,8 @@ use countio::Progress;
 fn main() -> std::io::Result<()> {
     println!("=== Progress Examples ===\n");
 
-    // Example 1: Progress with known total
-    known_total_example()?;
+    // Example 1: Progress with known write total
+    known_write_total_example()?;
 
     // Example 2: Progress with unknown total
     unknown_total_example()?;
@@ -22,25 +22,25 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-/// Example: Track progress when total size is known
-fn known_total_example() -> std::io::Result<()> {
-    println!("Example: Progress with known total");
+/// Example: Track progress when total write size is known
+fn known_write_total_example() -> std::io::Result<()> {
+    println!("Example: Progress with known write total");
 
-    let mut progress = Progress::with_total(Vec::new(), 100);
+    let mut progress = Progress::with_expected_writer_bytes(Vec::new(), 100);
 
     progress.write_all(b"Hello")?;
     println!(
         "  After 'Hello': {:.1}%",
-        progress.percentage().unwrap_or(0.0) * 100.0
+        progress.writer_percentage().unwrap_or(0.0) * 100.0
     );
 
     progress.write_all(b", World!")?;
     println!(
         "  After ', World!': {:.1}%",
-        progress.percentage().unwrap_or(0.0) * 100.0
+        progress.writer_percentage().unwrap_or(0.0) * 100.0
     );
 
-    println!("  Total processed: {} bytes\n", progress.bytes_processed());
+    println!("  Total processed: {} bytes\n", progress.total_bytes());
     Ok(())
 }
 
@@ -51,15 +51,15 @@ fn unknown_total_example() -> std::io::Result<()> {
     let mut progress = Progress::new(Vec::new());
 
     progress.write_all(b"Processing data")?;
-    println!("  Processed: {} bytes", progress.bytes_processed());
-    println!("  Percentage: {:?}", progress.percentage());
+    println!("  Processed: {} bytes", progress.total_bytes());
+    println!("  Writer percentage: {:?}", progress.writer_percentage());
 
     // Discover total size during processing
-    progress.set_total_expected(Some(50));
-    println!("  After setting total to 50:");
+    progress.set_expected_writer_bytes(Some(50));
+    println!("  After setting expected to 50:");
     println!(
-        "  Percentage: {:.1}%\n",
-        progress.percentage().unwrap_or(0.0) * 100.0
+        "  Writer percentage: {:.1}%\n",
+        progress.writer_percentage().unwrap_or(0.0) * 100.0
     );
 
     Ok(())
@@ -70,25 +70,25 @@ fn reading_example() -> std::io::Result<()> {
     println!("Example: Reading progress");
 
     let data = b"This is test data for reading progress tracking.";
-    let total_size = data.len() as u64;
-    let mut progress = Progress::with_total(&data[..], total_size);
+    let total_size = data.len();
+    let mut progress = Progress::with_expected_reader_bytes(&data[..], total_size);
 
     let mut buffer = [0u8; 10];
-    while progress.bytes_read() < data.len() {
+    while progress.reader_bytes() < data.len() {
         let bytes_read = progress.read(&mut buffer)?;
         if bytes_read == 0 {
             break;
         }
 
-        let pct = progress.percentage().unwrap_or(0.0) * 100.0;
+        let pct = progress.reader_percentage().unwrap_or(0.0) * 100.0;
         println!(
             "  Read: {}/{} bytes ({:.1}%)",
-            progress.bytes_read(),
+            progress.reader_bytes(),
             total_size,
             pct
         );
     }
 
-    println!("  Reading complete: {} bytes\n", progress.bytes_read());
+    println!("  Reading complete: {} bytes\n", progress.reader_bytes());
     Ok(())
 }

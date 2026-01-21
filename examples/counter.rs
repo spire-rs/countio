@@ -33,8 +33,8 @@ fn reading_example() -> std::io::Result<()> {
     let bytes_read = reader.read(&mut buffer)?;
 
     println!("  Read: {} bytes", bytes_read);
-    println!("  Total read: {}", reader.bytes_read());
-    println!("  Total (u128): {}\n", reader.bytes_processed());
+    println!("  Total read: {}", reader.reader_bytes());
+    println!("  Total (u128): {}\n", reader.total_bytes());
 
     Ok(())
 }
@@ -48,8 +48,8 @@ fn writing_example() -> std::io::Result<()> {
     writer.write_all(b"Hello, ")?;
     writer.write_all(b"World!")?;
 
-    println!("  Written: {} bytes", writer.bytes_written());
-    println!("  Total (u128): {}", writer.bytes_processed());
+    println!("  Written: {} bytes", writer.writer_bytes());
+    println!("  Total (u128): {}", writer.total_bytes());
 
     let data = writer.into_inner();
     println!("  Data: {:?}\n", String::from_utf8(data).unwrap());
@@ -62,12 +62,12 @@ fn large_numbers_example() -> std::io::Result<()> {
     println!("Example: Large numbers (u128 support)");
 
     let large_count = usize::MAX / 2;
-    let counter = Counter::with_bytes(large_count, large_count, Vec::<u8>::new());
+    let counter = Counter::with_bytes(Vec::<u8>::new(), large_count, large_count);
 
-    println!("  Reader: {} bytes", counter.bytes_read());
-    println!("  Writer: {} bytes", counter.bytes_written());
-    println!("  Total (u128): {}", counter.bytes_processed());
-    println!("  No overflow: {}", counter.bytes_processed() < u128::MAX);
+    println!("  Reader: {} bytes", counter.reader_bytes());
+    println!("  Writer: {} bytes", counter.writer_bytes());
+    println!("  Total (u128): {}", counter.total_bytes());
+    println!("  No overflow: {}", counter.total_bytes() < u128::MAX);
 
     Ok(())
 }

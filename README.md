@@ -19,6 +19,9 @@
 The wrapper struct to enable byte counting for `std::io::{Read, Write, Seek}`
 and its asynchronous variants from `futures` and `tokio` crates.
 
+Supports bidirectional I/O objects (like `TcpStream` or `Cursor`) that implement
+both read and write traits, tracking read and write byte counts independently.
+
 ### Features
 
 - `std` to enable `std::io::{Read, BufRead, Write, Seek}`. **Enabled by default**.
@@ -42,7 +45,7 @@ fn main() -> Result<()> {
     let mut buf = String::new();
     let len = reader.read_line(&mut buf)?;
 
-    assert_eq!(len, reader.bytes_read());
+    assert_eq!(len, reader.reader_bytes());
     Ok(())
 }
 ```
@@ -62,7 +65,34 @@ fn main() -> Result<()> {
     let len = writer.write(buf)?;
     writer.flush()?;
 
-    assert_eq!(len, writer.bytes_written());
+    assert_eq!(len, writer.writer_bytes());
+    Ok(())
+}
+```
+
+- Bidirectional I/O with `Progress`:
+
+```rust
+use std::io::{Cursor, Read, Write, Result};
+use countio::Progress;
+
+fn main() -> Result<()> {
+    let mut data = vec![0u8; 100];
+    let cursor = Cursor::new(&mut data);
+    let mut progress = Progress::with_expected_bytes(cursor, 50, 50);
+
+    // Write some data
+    progress.write_all(b"Hello")?;
+    assert_eq!(progress.writer_bytes(), 5);
+    assert_eq!(progress.writer_percentage(), Some(0.1));
+
+    // Seek back and read
+    progress.get_mut().set_position(0);
+    let mut buf = [0u8; 5];
+    progress.read_exact(&mut buf)?;
+    assert_eq!(progress.reader_bytes(), 5);
+    assert_eq!(progress.reader_percentage(), Some(0.1));
+
     Ok(())
 }
 ```

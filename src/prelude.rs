@@ -6,7 +6,7 @@
 //! use countio::prelude::*;
 //!
 //! let counter = Counter::new(Vec::<u8>::new());
-//! let progress = Progress::with_total(Vec::<u8>::new(), 100);
+//! let progress = Progress::with_expected_writer_bytes(Vec::<u8>::new(), 100);
 //! ```
 
 pub use crate::{Counter, Progress};

@@ -26,10 +26,14 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["std"]
+## Enables all features.
 full = ["std", "tokio", "futures"]
 
+## Enables `std::io::{Read, Write, Seek}` support.
 std = []
+## Enables `tokio::io::{AsyncRead, AsyncWrite, AsyncSeek}` support.
 tokio = ["dep:tokio"]
+## Enables `futures_io::{AsyncRead, AsyncWrite, AsyncSeek}` support.
 futures = ["dep:futures-io"]
 
 [dependencies]
