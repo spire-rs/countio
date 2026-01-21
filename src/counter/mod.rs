@@ -343,8 +343,7 @@ mod tests {
 
     #[test]
     fn test_inner() {
-        let mut writer = Vec::<u8>::new();
-        writer.push(8);
+        let writer = vec![8u8];
         assert_eq!(writer.len(), 1);
 
         let mut writer = Counter::new(writer);

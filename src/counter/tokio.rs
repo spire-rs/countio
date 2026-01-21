@@ -87,7 +87,9 @@ impl<D: AsyncSeek + Unpin> AsyncSeek for Counter<D> {
 mod tests {
     use std::io::Cursor;
 
-    use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncSeekExt, AsyncWriteExt, BufReader, BufWriter};
+    use tokio::io::{
+        AsyncBufReadExt, AsyncReadExt, AsyncSeekExt, AsyncWriteExt, BufReader, BufWriter,
+    };
 
     use super::*;
 

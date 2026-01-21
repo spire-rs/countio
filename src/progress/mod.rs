@@ -344,7 +344,7 @@ mod tests {
         let data = b"Hello, World!";
         let mut progress = Progress::with_expected_reader_bytes(&data[..], 13);
         let mut buf = [0u8; 5];
-        progress.read(&mut buf)?;
+        progress.read_exact(&mut buf)?;
 
         let pct = progress.reader_percentage().unwrap();
         assert!((pct - 5.0 / 13.0).abs() < 0.0001);
@@ -413,7 +413,7 @@ mod tests {
         let mut progress = Progress::with_expected_writer_bytes(Vec::new(), 1000);
 
         for _ in 0..100 {
-            progress.write(b"1234567890")?;
+            progress.write_all(b"1234567890")?;
         }
 
         assert_eq!(progress.writer_bytes(), 1000);
@@ -463,7 +463,7 @@ mod tests {
         let mut progress = Progress::with_expected_writer_bytes(Vec::new(), 100);
         progress.write_all(b"test")?;
 
-        let debug_str = format!("{:?}", progress);
+        let debug_str = format!("{progress:?}");
         assert!(debug_str.contains("Progress"));
         assert!(debug_str.contains("written"));
         assert!(debug_str.contains("expected_writer_bytes"));
