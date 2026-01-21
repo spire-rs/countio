@@ -1,0 +1,82 @@
+# Configuration for cargo-deny
+# See: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-unknown-linux-musl" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "aarch64-apple-darwin" },
+    { triple = "x86_64-pc-windows-msvc" },
+]
+
+[advisories]
+# The path where the advisory database is cloned/fetched into
+db-path = "~/.cargo/advisory-db"
+# The url(s) of the advisory databases to use
+db-urls = ["https://github.com/rustsec/advisory-db"]
+# The lint level for unmaintained crates
+unmaintained = "all"
+# The lint level for crates that have been yanked from their source registry
+yanked = "deny"
+# A list of advisory IDs to ignore
+ignore = [
+    # Add specific advisory IDs to ignore if needed
+]
+
+[licenses]
+# Confidence threshold for detecting a license from a license text (higher = stricter)
+confidence-threshold = 0.9
+# Private licenses are not allowed
+private = { ignore = false, registries = [] }
+# Warn if an allowed license is not used in the dependency graph
+unused-allowed-license = "warn"
+
+# List of explicitly allowed licenses (single licenses only)
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Unlicense",
+    "BSL-1.0",
+    "CC0-1.0",
+    "CDLA-Permissive-2.0",
+    "LGPL-2.1-or-later",
+    "Zlib",
+]
+
+# For compound licenses, we'll be permissive and only block if they contain denied licenses
+exceptions = []
+
+[bans]
+# Lint level for when multiple versions of the same crate are detected
+multiple-versions = "warn"
+# Lint level for when a crate version requirement is `*`
+wildcards = "deny"
+# The graph highlighting used when creating dotgraphs for crates with multiple versions
+highlight = "all"
+
+# List of crates that are allowed
+allow = []
+
+# List of crates to deny
+deny = []
+
+# Skip checking certain crates that are known to have complex but acceptable licensing
+skip = []
+skip-tree = []
+
+[sources]
+# Lint level for what to happen when a crate from a crate registry that is not in the allow list
+unknown-registry = "deny"
+# Lint level for what to happen when a crate from a git repository that is not in the allow list
+unknown-git = "deny"
+# List of URLs for allowed crate registries
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# List of URLs for allowed Git repositories
+allow-git = []

@@ -2,10 +2,11 @@
 
 [package]
 name = "countio"
-version = "0.2.19"
+version = "0.3.0"
 readme = "./README.md"
 
-edition = "2021"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
 license = "MIT"
 
@@ -23,15 +24,16 @@ its async variants from futures and tokio.
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
-[lib]
-path = "./lib.rs"
-
 [features]
 default = ["std"]
+## Enables all features.
 full = ["std", "tokio", "futures"]
 
+## Enables `std::io::{Read, Write, Seek}` support.
 std = []
+## Enables `tokio::io::{AsyncRead, AsyncWrite, AsyncSeek}` support.
 tokio = ["dep:tokio"]
+## Enables `futures_io::{AsyncRead, AsyncWrite, AsyncSeek}` support.
 futures = ["dep:futures-io"]
 
 [dependencies]

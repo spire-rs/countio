@@ -3,7 +3,6 @@
 [![Build Status][action-badge]][action-url]
 [![Crate Docs][docs-badge]][docs-url]
 [![Crate Version][crates-badge]][crates-url]
-[![Crate Coverage][coverage-badge]][coverage-url]
 
 **Check out other `spire` projects [here](https://github.com/spire-rs).**
 
@@ -12,18 +11,20 @@
 [crates-badge]: https://img.shields.io/crates/v/countio.svg?logo=rust&style=flat-square
 [crates-url]: https://crates.io/crates/countio
 [docs-badge]: https://img.shields.io/docsrs/countio?logo=Docs.rs&style=flat-square
-[docs-url]: http://docs.rs/countio
-[coverage-badge]: https://img.shields.io/codecov/c/github/spire-rs/countio?logo=codecov&logoColor=white&style=flat-square
-[coverage-url]: https://app.codecov.io/gh/spire-rs/countio
+[docs-url]: https://docs.rs/countio
 
 The wrapper struct to enable byte counting for `std::io::{Read, Write, Seek}`
 and its asynchronous variants from `futures` and `tokio` crates.
 
+Supports bidirectional I/O objects (like `TcpStream` or `Cursor`) that implement
+both read and write traits, tracking read and write byte counts independently.
+
 ### Features
 
-- `std` to enable `std::io::{Read, Write, Seek}`. **Enabled by default**.
-- `futures` to enable `futures_io::{AsyncRead, AsyncWrite, AsyncSeek}`.
-- `tokio` to enable `tokio::io::{AsyncRead, AsyncWrite, AsyncSeek}`.
+- `std` to enable `std::io::{Read, BufRead, Write, Seek}`. **Enabled by default**.
+- `futures` to enable `futures_io::{AsyncRead, AsyncBufRead, AsyncWrite, AsyncSeek}`.
+- `tokio` to enable `tokio::io::{AsyncRead, AsyncBufRead, AsyncWrite, AsyncSeek}`.
+- `full` to enable all features (`std`, `futures`, and `tokio`).
 
 ### Examples
 
@@ -62,6 +63,33 @@ fn main() -> Result<()> {
     writer.flush()?;
 
     assert_eq!(len, writer.writer_bytes());
+    Ok(())
+}
+```
+
+- Bidirectional I/O with `Progress`:
+
+```rust
+use std::io::{Cursor, Read, Write, Result};
+use countio::Progress;
+
+fn main() -> Result<()> {
+    let mut data = vec![0u8; 100];
+    let cursor = Cursor::new(&mut data);
+    let mut progress = Progress::with_expected_bytes(cursor, 50, 50);
+
+    // Write some data
+    progress.write_all(b"Hello")?;
+    assert_eq!(progress.writer_bytes(), 5);
+    assert_eq!(progress.writer_percentage(), Some(0.1));
+
+    // Seek back and read
+    progress.get_mut().set_position(0);
+    let mut buf = [0u8; 5];
+    progress.read_exact(&mut buf)?;
+    assert_eq!(progress.reader_bytes(), 5);
+    assert_eq!(progress.reader_percentage(), Some(0.1));
+
     Ok(())
 }
 ```
