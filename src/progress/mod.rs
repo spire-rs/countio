@@ -1,3 +1,5 @@
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod stdlib;
 
 #[cfg(feature = "futures")]
@@ -150,6 +152,30 @@ impl<D> Progress<D> {
     pub const fn get_mut(&mut self) -> &mut D {
         self.counter.get_mut()
     }
+
+    /// Resets the byte counters to zero without affecting the underlying I/O object
+    /// or the expected total.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::io::Write;
+    /// use countio::Progress;
+    ///
+    /// let mut progress = Progress::with_total(Vec::new(), 100);
+    /// progress.write_all(b"Hello").unwrap();
+    /// assert_eq!(progress.bytes_written(), 5);
+    /// assert_eq!(progress.percentage(), Some(0.05));
+    ///
+    /// progress.reset();
+    /// assert_eq!(progress.bytes_written(), 0);
+    /// assert_eq!(progress.percentage(), Some(0.0));
+    /// assert_eq!(progress.total_expected(), Some(100)); // Total preserved
+    /// ```
+    #[inline]
+    pub const fn reset(&mut self) {
+        self.counter.reset();
+    }
 }
 
 impl<D> From<Counter<D>> for Progress<D> {
@@ -158,6 +184,31 @@ impl<D> From<Counter<D>> for Progress<D> {
             counter,
             total_expected: None,
         }
+    }
+}
+
+impl<D: Clone> Clone for Progress<D> {
+    fn clone(&self) -> Self {
+        Self {
+            counter: self.counter.clone(),
+            total_expected: self.total_expected,
+        }
+    }
+}
+
+impl<D: Default> Default for Progress<D> {
+    fn default() -> Self {
+        Self::new(D::default())
+    }
+}
+
+impl<D: core::fmt::Debug> core::fmt::Debug for Progress<D> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Progress")
+            .field("counter", &self.counter)
+            .field("total_expected", &self.total_expected)
+            .field("percentage", &self.percentage())
+            .finish()
     }
 }
 
@@ -263,6 +314,53 @@ mod tests {
         assert_eq!(progress.bytes_written(), 1000);
         assert_eq!(progress.bytes_processed(), 1000);
         assert_eq!(progress.percentage(), Some(1.0));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_progress_reset() -> Result<()> {
+        let mut progress = Progress::with_total(Vec::new(), 100);
+        progress.write_all(b"Hello")?;
+        assert_eq!(progress.bytes_written(), 5);
+
+        progress.reset();
+        assert_eq!(progress.bytes_written(), 0);
+        assert_eq!(progress.percentage(), Some(0.0));
+        assert_eq!(progress.total_expected(), Some(100));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_progress_clone() -> Result<()> {
+        let mut progress = Progress::with_total(Vec::new(), 100);
+        progress.write_all(b"Hello")?;
+
+        let cloned = progress.clone();
+        assert_eq!(cloned.bytes_written(), 5);
+        assert_eq!(cloned.total_expected(), Some(100));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_progress_default() {
+        let progress: Progress<Vec<u8>> = Progress::default();
+        assert_eq!(progress.bytes_read(), 0);
+        assert_eq!(progress.bytes_written(), 0);
+        assert_eq!(progress.total_expected(), None);
+    }
+
+    #[test]
+    fn test_progress_debug() -> Result<()> {
+        let mut progress = Progress::with_total(Vec::new(), 100);
+        progress.write_all(b"test")?;
+
+        let debug_str = format!("{:?}", progress);
+        assert!(debug_str.contains("Progress"));
+        assert!(debug_str.contains("written"));
+        assert!(debug_str.contains("total_expected"));
 
         Ok(())
     }

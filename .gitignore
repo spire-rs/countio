@@ -1,13 +1,11 @@
 # OS
 Thumbs.db
 .DS_Store
-.ignore*/
 
-# Editors
+# IDE and Editors
 .vs/
 .vscode/
 .idea/
-.fleet/
 .zed/
 
 # Rust
@@ -17,16 +15,12 @@ Cargo.lock
 **/*.rs.bk
 *.pdb
 
-# Generated
-*.backup
-coverage/
-
-# Output
+# Build output
+dist/
 build/
 output/
-dist/
 
-# Environment
+# Environment files
 .env*
 !.env.example
 
@@ -34,3 +28,15 @@ dist/
 logs/
 *.log
 *.log*
+
+# Backup and temporary files
+*.bak
+*.backup
+*.tmp
+tmp/
+temp/
+
+# Other
+.ignore*/
+LLM.md
+.claude

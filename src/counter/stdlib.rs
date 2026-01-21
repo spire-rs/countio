@@ -1,4 +1,3 @@
-use std::fmt;
 use std::io::{BufRead, Read, Result, Seek, SeekFrom, Write};
 
 use crate::Counter;
@@ -39,16 +38,6 @@ impl<D: Seek> Seek for Counter<D> {
     #[inline]
     fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         self.inner.seek(pos)
-    }
-}
-
-impl<D: fmt::Debug> fmt::Debug for Counter<D> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Counter")
-            .field("inner", &self.inner)
-            .field("read", &self.reader_bytes)
-            .field("written", &self.writer_bytes)
-            .finish()
     }
 }
 

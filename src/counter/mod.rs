@@ -1,3 +1,5 @@
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod stdlib;
 
 #[cfg(feature = "futures")]
@@ -272,12 +274,66 @@ impl<D> Counter<D> {
     pub const fn get_mut(&mut self) -> &mut D {
         &mut self.inner
     }
+
+    /// Resets the byte counters to zero without affecting the underlying I/O object.
+    ///
+    /// This is useful when you want to start counting from a fresh state
+    /// without recreating the wrapper or losing the underlying object's state.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::io::{Read, Write};
+    /// use countio::Counter;
+    ///
+    /// let mut counter = Counter::new(Vec::new());
+    /// counter.write_all(b"Hello").unwrap();
+    /// assert_eq!(counter.bytes_written(), 5);
+    ///
+    /// counter.reset();
+    /// assert_eq!(counter.bytes_written(), 0);
+    /// assert_eq!(counter.bytes_read(), 0);
+    ///
+    /// // The underlying data is preserved
+    /// assert_eq!(counter.get_ref(), b"Hello");
+    /// ```
+    #[inline]
+    pub const fn reset(&mut self) {
+        self.reader_bytes = 0;
+        self.writer_bytes = 0;
+    }
 }
 
 impl<D> From<D> for Counter<D> {
     #[inline]
     fn from(inner: D) -> Self {
         Self::new(inner)
+    }
+}
+
+impl<D: Clone> Clone for Counter<D> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            reader_bytes: self.reader_bytes,
+            writer_bytes: self.writer_bytes,
+        }
+    }
+}
+
+impl<D: Default> Default for Counter<D> {
+    fn default() -> Self {
+        Self::new(D::default())
+    }
+}
+
+impl<D: core::fmt::Debug> core::fmt::Debug for Counter<D> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Counter")
+            .field("inner", &self.inner)
+            .field("read", &self.reader_bytes)
+            .field("written", &self.writer_bytes)
+            .finish()
     }
 }
 
@@ -310,5 +366,42 @@ mod tests {
         assert_eq!(counter.bytes_read(), 100);
         assert_eq!(counter.bytes_written(), 200);
         assert_eq!(counter.bytes_processed(), 300);
+    }
+
+    #[test]
+    fn test_reset() {
+        use std::io::Write;
+
+        let mut counter = Counter::new(Vec::new());
+        counter.write_all(b"Hello").unwrap();
+        assert_eq!(counter.bytes_written(), 5);
+
+        counter.reset();
+        assert_eq!(counter.bytes_written(), 0);
+        assert_eq!(counter.bytes_read(), 0);
+        assert_eq!(counter.bytes_processed(), 0);
+
+        // Data is preserved
+        assert_eq!(counter.get_ref(), b"Hello");
+    }
+
+    #[test]
+    fn test_clone() {
+        use std::io::Write;
+
+        let mut counter = Counter::new(Vec::new());
+        counter.write_all(b"Hello").unwrap();
+
+        let cloned = counter.clone();
+        assert_eq!(cloned.bytes_written(), 5);
+        assert_eq!(cloned.get_ref(), b"Hello");
+    }
+
+    #[test]
+    fn test_default() {
+        let counter: Counter<Vec<u8>> = Counter::default();
+        assert_eq!(counter.bytes_read(), 0);
+        assert_eq!(counter.bytes_written(), 0);
+        assert!(counter.get_ref().is_empty());
     }
 }

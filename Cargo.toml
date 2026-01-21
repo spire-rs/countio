@@ -25,9 +25,10 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-default = []
-full = ["tokio", "futures"]
+default = ["std"]
+full = ["std", "tokio", "futures"]
 
+std = []
 tokio = ["dep:tokio"]
 futures = ["dep:futures-io"]
 
