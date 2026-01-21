@@ -3,7 +3,6 @@
 [![Build Status][action-badge]][action-url]
 [![Crate Docs][docs-badge]][docs-url]
 [![Crate Version][crates-badge]][crates-url]
-[![Crate Coverage][coverage-badge]][coverage-url]
 
 **Check out other `spire` projects [here](https://github.com/spire-rs).**
 
@@ -12,9 +11,7 @@
 [crates-badge]: https://img.shields.io/crates/v/countio.svg?logo=rust&style=flat-square
 [crates-url]: https://crates.io/crates/countio
 [docs-badge]: https://img.shields.io/docsrs/countio?logo=Docs.rs&style=flat-square
-[docs-url]: http://docs.rs/countio
-[coverage-badge]: https://img.shields.io/codecov/c/github/spire-rs/countio?logo=codecov&logoColor=white&style=flat-square
-[coverage-url]: https://app.codecov.io/gh/spire-rs/countio
+[docs-url]: https://docs.rs/countio
 
 The wrapper struct to enable byte counting for `std::io::{Read, Write, Seek}`
 and its asynchronous variants from `futures` and `tokio` crates.
