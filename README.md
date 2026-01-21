@@ -6,8 +6,8 @@
 
 **Check out other `spire` projects [here](https://github.com/spire-rs).**
 
-[action-badge]: https://img.shields.io/github/actions/workflow/status/spire-rs/countio/build.yaml?branch=main&label=build&logo=github&style=flat-square
-[action-url]: https://github.com/spire-rs/countio/actions/workflows/build.yaml
+[action-badge]: https://img.shields.io/github/actions/workflow/status/spire-rs/countio/build.yml?branch=main&label=build&logo=github&style=flat-square
+[action-url]: https://github.com/spire-rs/countio/actions/workflows/build.yml
 [crates-badge]: https://img.shields.io/crates/v/countio.svg?logo=rust&style=flat-square
 [crates-url]: https://crates.io/crates/countio
 [docs-badge]: https://img.shields.io/docsrs/countio?logo=Docs.rs&style=flat-square
