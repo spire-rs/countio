@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [0.4.0] - 2025-01-21
+## [0.3.0] - 2025-01-21
 
 ### Added
 
@@ -36,11 +36,11 @@ and this project adheres to
 
 - **Breaking:** Removed `counter()` and `counter_mut()` from `Progress` (use delegated methods instead)
 
-## [0.3.0] - 2025-01-01
+## [0.2.0] - 2024-01-01
 
 - Initial release with `Counter<D>` wrapper for byte counting
 - Support for `std::io`, `futures_io`, and `tokio::io` traits
 
-[Unreleased]: https://github.com/spire-rs/countio/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/spire-rs/countio/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/spire-rs/countio/releases/tag/v0.3.0
+[Unreleased]: https://github.com/spire-rs/countio/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/spire-rs/countio/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/spire-rs/countio/releases/tag/v0.2.0
