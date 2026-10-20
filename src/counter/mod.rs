@@ -401,6 +401,6 @@ mod tests {
         let counter: Counter<Vec<u8>> = Counter::default();
         assert_eq!(counter.reader_bytes(), 0);
         assert_eq!(counter.writer_bytes(), 0);
-        assert!(counter.get_ref().is_empty());
+        assert_eq!(counter.get_ref().as_slice(), []);
     }
 }
