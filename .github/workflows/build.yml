@@ -27,6 +27,11 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -52,16 +57,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
 
-      - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2
-
       - name: Check formatting
-        run: cargo fmt -- --check
+        run: cargo +nightly fmt --all -- --check
 
   clippy:
     name: Clippy
@@ -116,3 +118,18 @@ jobs:
 
       - name: Run tests (all features)
         run: cargo test --all-features
+
+  machete:
+    name: Machete
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install cargo-machete
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-machete
+
+      - name: Run machete
+        run: cargo machete
